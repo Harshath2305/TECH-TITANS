@@ -1,0 +1,7 @@
+{
+  "name": "SOURCE TRACE AI",
+  "description": "Enterprise Supplier Compliance & Supply Chain Intelligence Platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
