@@ -7,8 +7,326 @@
   code, pre, .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
+  .font-serif, h1, h2, .hero-heading, .editorial-heading {
+    font-family: 'Gelasio', Georgia, serif;
+  }
 }
 
+/* ========================================================
+   DARK ENTERPRISE THEME & SURFACE COHESION
+   ======================================================== */
+@media screen {
+  /* Unified dark surface elevation */
+  .bg-white {
+    background-color: rgba(15, 23, 42, 0.72) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: #f1f5f9;
+  }
+  .bg-slate-50 {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+  }
+  .bg-slate-100 {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+  }
+  .bg-slate-200 {
+    background-color: rgba(255, 255, 255, 0.10) !important;
+  }
+  .border-slate-200,
+  .border-slate-100 {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  .text-slate-900 {
+    color: #f8fafc !important;
+  }
+  .text-slate-800 {
+    color: #f1f5f9 !important;
+  }
+  .text-slate-700 {
+    color: #e2e8f0 !important;
+  }
+  .text-slate-600 {
+    color: #cbd5e1 !important;
+  }
+  .hover\:bg-slate-50:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+  .hover\:bg-slate-100:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  /* Enterprise inputs & selects */
+  input[type="text"]:not(.bg-transparent),
+  input[type="number"]:not(.bg-transparent),
+  select {
+    background-color: rgba(10, 16, 28, 0.70) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #f8fafc !important;
+  }
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  select:focus {
+    border-color: rgba(20, 184, 166, 0.6) !important;
+    box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.4) !important;
+  }
+  select option {
+    background-color: #0f172a;
+    color: #f8fafc;
+  }
+  /* Table micro-interaction */
+  tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.035) !important;
+  }
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(11, 17, 30, 0.6);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(20, 184, 166, 0.4);
+  }
+}
+
+/* ========================================================
+   GLASSMORPHISM & NEUMORPHISM DESIGN SYSTEM TOKENS
+   ======================================================== */
+
+/* Radial background atmosphere for enterprise depth */
+.dark-enterprise-bg {
+  background-color: #0b111e;
+  background-image: 
+    radial-gradient(circle at 18% 12%, rgba(20, 184, 166, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 85% 25%, rgba(59, 130, 246, 0.04) 0%, transparent 40%),
+    radial-gradient(circle at 50% 80%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
+}
+
+/* Glass Hero Surface */
+.glass-hero {
+  background: rgba(15, 25, 42, 0.70) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  position: relative;
+}
+
+/* Top Edge Glass Reflection Highlight */
+.glass-reflection {
+  position: relative;
+}
+.glass-reflection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0));
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Glass Topbar Header */
+.glass-topbar {
+  background: rgba(10, 18, 30, 0.72) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Glass Metric Card */
+.glass-metric-card {
+  background: rgba(255, 255, 255, 0.045) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 8px 8px 24px rgba(0, 0, 0, 0.20), -4px -4px 14px rgba(255, 255, 255, 0.025) !important;
+  border-radius: 16px;
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out;
+  position: relative;
+  overflow: hidden;
+}
+.glass-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+.glass-metric-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.25), -2px -2px 10px rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+/* Glass Feature Card */
+.glass-feature-card {
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16) !important;
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out;
+  position: relative;
+  overflow: hidden;
+}
+.glass-feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+.glass-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28) !important;
+  border-color: rgba(20, 184, 166, 0.35) !important;
+}
+
+/* General Glass Panel */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+  position: relative;
+}
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0));
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Glass Modal Dialog */
+.glass-modal {
+  background: rgba(12, 20, 34, 0.82) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+}
+
+/* Copilot Drawer Surface */
+.glass-copilot {
+  background: rgba(12, 20, 34, 0.78) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.30) !important;
+}
+
+/* Neumorphic Recessed Controls (e.g. Sliders, Insets, Wells) */
+.neo-recessed {
+  background: rgba(10, 16, 28, 0.60) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.35), inset -1px -1px 3px rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Neumorphic Raised Controls (e.g. Toggles, Chips) */
+.neo-raised {
+  background: rgba(30, 41, 59, 0.70) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.25), -2px -2px 6px rgba(255, 255, 255, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Buttons with Neumorphic Depth */
+.neo-button-primary {
+  background: #14b8a6;
+  color: #022c22;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  position: relative;
+  overflow: hidden;
+}
+.neo-button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(20, 184, 166, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.neo-button-primary:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.20), inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.neo-button-dark {
+  background: rgba(30, 41, 59, 0.85);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+  position: relative;
+  overflow: hidden;
+}
+.neo-button-dark:hover {
+  transform: translateY(-2px);
+  background: rgba(51, 65, 85, 0.90);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+.neo-button-dark:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.20), inset 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Button Hover Shine Micro-interaction */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-20deg);
+  pointer-events: none;
+  transition: none;
+}
+.btn-shine:hover::after {
+  left: 180%;
+  transition: left 550ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reduced Motion Respect */
+@media (prefers-reduced-motion: reduce) {
+  .btn-shine::after {
+    display: none !important;
+  }
+  .glass-metric-card,
+  .glass-feature-card,
+  .neo-button-primary,
+  .neo-button-dark {
+    transform: none !important;
+    transition: opacity 100ms !important;
+  }
+}
+
+/* Print Overrides */
 @media print {
   .no-print {
     display: none !important;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, Building2, FileText, Truck, ShieldCheck, CheckSquare, ArrowRight, Bot, AlertTriangle, Sliders, Grid, Database } from 'lucide-react';
+import { Search, X, Building2, FileText, Truck, ShieldCheck, CheckSquare, ArrowRight, Bot, AlertTriangle, Sliders, Grid, Database, ShieldAlert, Cpu } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { RiskBadge } from './RiskBadge';
 import { ComplianceScoreBadge } from './ComplianceScoreBadge';
@@ -89,55 +89,55 @@ export const GlobalSearchModal: React.FC = () => {
     matchedCerts.length > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-slate-900/60 backdrop-blur-xs">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-slate-950/70 backdrop-blur-md">
+      <div className="glass-modal rounded-3xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in zoom-in-95 duration-150 glass-reflection text-slate-100">
         {/* Input Bar */}
-        <div className="p-4 border-b border-slate-100 flex items-center gap-3">
-          <Search className="w-5 h-5 text-slate-400 shrink-0" />
+        <div className="p-4 sm:p-5 border-b border-white/10 flex items-center gap-3 bg-white/5">
+          <Search className="w-5 h-5 text-teal-400 shrink-0" />
           <input
             ref={inputRef}
             type="text"
             placeholder="Search suppliers, documents, shipments, certifications, actions..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full text-base bg-transparent text-slate-900 placeholder:text-slate-400 focus:outline-hidden"
+            className="w-full text-base bg-transparent text-white placeholder:text-slate-400 focus:outline-hidden"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="p-1 text-slate-400 hover:text-slate-600 rounded-md"
+              className="p-1 text-slate-400 hover:text-white rounded-md cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           )}
           <button
             onClick={() => setIsSearchOpen(false)}
-            className="text-xs font-mono px-2 py-1 rounded bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+            className="text-xs font-mono px-2 py-1 rounded-md bg-white/10 text-slate-300 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
           >
             ESC
           </button>
         </div>
 
         {/* Results Area */}
-        <div className="overflow-y-auto p-4 space-y-6">
+        <div className="overflow-y-auto p-4 sm:p-5 space-y-6">
           {!query && (
             <div className="space-y-4">
-              <div className="text-center py-3 text-slate-500 text-xs">
-                <p className="font-semibold text-slate-800 mb-0.5">Global Intelligence Search</p>
+              <div className="text-center py-3 text-slate-400 text-xs">
+                <p className="font-semibold text-white mb-0.5 font-serif text-sm">Global Intelligence Search</p>
                 <p className="text-slate-400">Search suppliers (e.g. Apex), consignments, certificates, or jump to intelligent tools:</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-2 gap-2.5 text-xs">
                 <button
                   onClick={() => {
                     setIsSearchOpen(false);
                     setIsCopilotOpen(true);
                   }}
-                  className="p-2.5 rounded-xl border border-slate-200 hover:border-teal-400 bg-slate-50 hover:bg-teal-50/50 text-left transition-colors flex items-center gap-2 cursor-pointer"
+                  className="p-3 rounded-xl border border-white/10 hover:border-teal-400/40 bg-white/5 hover:bg-teal-500/10 text-left transition-colors flex items-center gap-2.5 cursor-pointer neo-raised"
                 >
-                  <Bot className="w-4 h-4 text-teal-600 shrink-0" />
+                  <Bot className="w-4 h-4 text-teal-400 shrink-0" />
                   <div>
-                    <span className="font-bold text-slate-900 block">Supply Chain Copilot</span>
+                    <span className="font-bold text-white block">Supply Chain Copilot</span>
                     <span className="text-[10px] text-slate-400">Ask questions with AI</span>
                   </div>
                 </button>
@@ -147,11 +147,11 @@ export const GlobalSearchModal: React.FC = () => {
                     setIsSearchOpen(false);
                     navigate('anomalies');
                   }}
-                  className="p-2.5 rounded-xl border border-slate-200 hover:border-amber-400 bg-slate-50 hover:bg-amber-50/50 text-left transition-colors flex items-center gap-2 cursor-pointer"
+                  className="p-3 rounded-xl border border-white/10 hover:border-amber-400/40 bg-white/5 hover:bg-amber-500/10 text-left transition-colors flex items-center gap-2.5 cursor-pointer neo-raised"
                 >
-                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
                   <div>
-                    <span className="font-bold text-slate-900 block">Anomaly Detection</span>
+                    <span className="font-bold text-white block">Anomaly Detection</span>
                     <span className="text-[10px] text-slate-400">Live surveillance engine</span>
                   </div>
                 </button>
@@ -161,11 +161,11 @@ export const GlobalSearchModal: React.FC = () => {
                     setIsSearchOpen(false);
                     navigate('simulator');
                   }}
-                  className="p-2.5 rounded-xl border border-slate-200 hover:border-teal-400 bg-slate-50 hover:bg-teal-50/50 text-left transition-colors flex items-center gap-2 cursor-pointer"
+                  className="p-3 rounded-xl border border-white/10 hover:border-teal-400/40 bg-white/5 hover:bg-teal-500/10 text-left transition-colors flex items-center gap-2.5 cursor-pointer neo-raised"
                 >
-                  <Sliders className="w-4 h-4 text-teal-600 shrink-0" />
+                  <Sliders className="w-4 h-4 text-teal-400 shrink-0" />
                   <div>
-                    <span className="font-bold text-slate-900 block">What-If Simulator</span>
+                    <span className="font-bold text-white block">What-If Simulator</span>
                     <span className="text-[10px] text-slate-400">Interactive scenario model</span>
                   </div>
                 </button>
@@ -173,14 +173,28 @@ export const GlobalSearchModal: React.FC = () => {
                 <button
                   onClick={() => {
                     setIsSearchOpen(false);
-                    navigate('heatmap');
+                    navigate('contradictions');
                   }}
-                  className="p-2.5 rounded-xl border border-slate-200 hover:border-purple-400 bg-slate-50 hover:bg-purple-50/50 text-left transition-colors flex items-center gap-2 cursor-pointer"
+                  className="p-3 rounded-xl border border-white/10 hover:border-rose-400/40 bg-white/5 hover:bg-rose-500/10 text-left transition-colors flex items-center gap-2.5 cursor-pointer neo-raised"
                 >
-                  <Grid className="w-4 h-4 text-purple-600 shrink-0" />
+                  <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
                   <div>
-                    <span className="font-bold text-slate-900 block">Risk Heatmap</span>
-                    <span className="text-[10px] text-slate-400">2D quadrant matrix</span>
+                    <span className="font-bold text-white block">Evidence Contradictions</span>
+                    <span className="text-[10px] text-slate-400">Cross-record discrepancies</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    navigate('investigations');
+                  }}
+                  className="p-3 rounded-xl border border-white/10 hover:border-teal-400/40 bg-white/5 hover:bg-teal-500/10 text-left transition-colors flex items-center gap-2.5 cursor-pointer neo-raised"
+                >
+                  <Cpu className="w-4 h-4 text-teal-400 shrink-0" />
+                  <div>
+                    <span className="font-bold text-white block">Autonomous Investigation</span>
+                    <span className="text-[10px] text-slate-400">8-gate root cause audit</span>
                   </div>
                 </button>
               </div>
@@ -207,18 +221,18 @@ export const GlobalSearchModal: React.FC = () => {
                       setIsSearchOpen(false);
                       navigate('supplier-detail', s.id);
                     }}
-                    className="p-3 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors"
+                    className="p-3 rounded-xl border border-white/10 hover:border-teal-400/50 bg-white/5 hover:bg-white/10 cursor-pointer flex items-center justify-between transition-colors neo-raised"
                   >
                     <div>
-                      <div className="text-sm font-semibold text-slate-900">{s.name}</div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-sm font-semibold text-white">{s.name}</div>
+                      <div className="text-xs text-slate-400">
                         {s.code} · {s.location} · {s.industry}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <ComplianceScoreBadge score={s.complianceScore} size="sm" showSubtitle={false} />
                       <RiskBadge level={s.riskLevel} size="sm" />
-                      <ArrowRight className="w-4 h-4 text-slate-300" />
+                      <ArrowRight className="w-4 h-4 text-slate-400" />
                     </div>
                   </div>
                 ))}
@@ -240,15 +254,15 @@ export const GlobalSearchModal: React.FC = () => {
                       setIsSearchOpen(false);
                       navigate('documents');
                     }}
-                    className="p-3 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors"
+                    className="p-3 rounded-xl border border-white/10 hover:border-teal-400/50 bg-white/5 hover:bg-white/10 cursor-pointer flex items-center justify-between transition-colors neo-raised"
                   >
                     <div>
-                      <div className="text-sm font-medium text-slate-900 font-mono">{d.fileName}</div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-sm font-medium text-teal-300 font-mono">{d.fileName}</div>
+                      <div className="text-xs text-slate-400">
                         {d.documentType} · {d.supplierName} · {d.status}
                       </div>
                     </div>
-                    <span className="text-xs text-teal-600 font-medium">View in repository</span>
+                    <span className="text-xs text-teal-400 font-medium">View in repository</span>
                   </div>
                 ))}
               </div>
@@ -269,19 +283,19 @@ export const GlobalSearchModal: React.FC = () => {
                       setIsSearchOpen(false);
                       navigate('shipments');
                     }}
-                    className="p-3 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors"
+                    className="p-3 rounded-xl border border-white/10 hover:border-teal-400/50 bg-white/5 hover:bg-white/10 cursor-pointer flex items-center justify-between transition-colors neo-raised"
                   >
                     <div>
-                      <div className="text-sm font-semibold font-mono text-slate-900">{sh.shipmentNumber}</div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-sm font-semibold font-mono text-white">{sh.shipmentNumber}</div>
+                      <div className="text-xs text-slate-400">
                         {sh.origin} → {sh.destination} · {sh.transportMode}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-xs font-mono font-bold text-slate-900 tabular-nums">
+                      <div className="text-xs font-mono font-bold text-emerald-400 tabular-nums">
                         {sh.carbonEmission} kg CO2e
                       </div>
-                      <div className="text-[10px] text-slate-500">{sh.hasManifest ? 'Manifest attached' : 'Missing manifest'}</div>
+                      <div className="text-[10px] text-slate-400">{sh.hasManifest ? 'Manifest attached' : 'Missing manifest'}</div>
                     </div>
                   </div>
                 ))}

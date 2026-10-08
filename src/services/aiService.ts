@@ -97,7 +97,7 @@ export function buildDeterministicRiskAnalysis(supplier: Supplier): RiskAnalysis
       isAdvisory: true,
       source: 'deterministic_fallback',
       isFallback: true,
-      notice: 'AI service temporarily unavailable — showing evidence-based fallback insights.',
+      notice: 'AI service temporarily unavailable. Showing evidence-based registry information.',
       provenance: 'Evidence-based fallback analysis — advisory only. Based on stored application records.',
     };
   }
@@ -176,7 +176,7 @@ export function buildDeterministicRiskAnalysis(supplier: Supplier): RiskAnalysis
     isAdvisory: true,
     source: 'deterministic_fallback',
     isFallback: true,
-    notice: 'AI service temporarily unavailable — showing evidence-based fallback insights.',
+    notice: 'AI service temporarily unavailable. Showing evidence-based registry information.',
     provenance: 'Evidence-based fallback analysis — advisory only. Based on stored application records.',
   };
 }
@@ -386,7 +386,7 @@ export async function compareSuppliersAI(suppliers: Supplier[]): Promise<Supplie
     isAdvisory: true,
     source: 'deterministic_fallback',
     isFallback: true,
-    notice: 'AI service temporarily unavailable — showing evidence-based fallback insights.',
+    notice: 'AI service temporarily unavailable. Showing evidence-based registry information.',
     provenance: 'Evidence-based fallback analysis — advisory only. Based on stored records.',
   };
 }
@@ -478,7 +478,7 @@ export async function fetchExecutiveInsights(
     insights,
     isFallback: true,
     source: 'deterministic_fallback',
-    notice: 'AI service temporarily unavailable — showing evidence-based fallback insights.',
+    notice: 'AI service temporarily unavailable. Showing evidence-based registry information.',
   };
 }
 
@@ -535,7 +535,7 @@ export async function explainScoreDelta(
     isAdvisory: true,
     source: 'deterministic_fallback',
     isFallback: true,
-    notice: 'AI service temporarily unavailable — showing evidence-based fallback insights.',
+    notice: 'AI service temporarily unavailable. Showing evidence-based registry information.',
     provenance: 'Evidence-based fallback analysis — advisory only. Computed from internal stored records.',
   };
 }
@@ -697,7 +697,7 @@ export async function queryCopilot(
     citations,
     source: 'deterministic_fallback',
     isFallback: true,
-    notice: 'AI service temporarily unavailable — showing evidence-based fallback insights.',
+    notice: 'AI service temporarily unavailable. Showing evidence-based registry information.',
     model: 'Evidence-based fallback analysis',
   };
 }
@@ -811,4 +811,81 @@ From a procurement governance perspective, achieving a ${projectedScore}/100 sco
     source: 'deterministic_fallback',
   };
 }
+
+export async function explainContradictionWithAi(contradiction: any): Promise<{
+  whyItMatters: string;
+  recommendedAction: string;
+  source: string;
+  isFallback: boolean;
+}> {
+  if (!isClientInAiCooldown()) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 9000);
+
+      const res = await fetch('/api/ai/explain-contradiction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contradiction }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        return await res.json();
+      } else {
+        triggerClientAiCooldown();
+      }
+    } catch {
+      triggerClientAiCooldown();
+    }
+  }
+
+  return {
+    whyItMatters: contradiction.explanation || `Variance detected between ${contradiction.sourceA} and ${contradiction.sourceB}. This creates non-conformance exposure under CSRD / EU supply chain regulations and prevents automated milestone reconciliation.`,
+    recommendedAction: contradiction.recommendedAction || 'Request formal reconciliation documentation from supplier and freeze related automated approvals.',
+    source: 'deterministic_fallback',
+    isFallback: true,
+  };
+}
+
+export async function interpretInvestigationWithAi(investigation: any): Promise<{
+  executiveSummary: string;
+  actionPriorities: string[];
+  source: string;
+  isFallback: boolean;
+}> {
+  if (!isClientInAiCooldown()) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 9000);
+
+      const res = await fetch('/api/ai/investigate-supplier', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ investigation }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        return await res.json();
+      } else {
+        triggerClientAiCooldown();
+      }
+    } catch {
+      triggerClientAiCooldown();
+    }
+  }
+
+  return {
+    executiveSummary: investigation.answer || 'Investigation completed using deterministic verification rules grounded in SourceTrace master records.',
+    actionPriorities: investigation.recommendedActions || ['Maintain quarterly review cadence.'],
+    source: 'deterministic_fallback',
+    isFallback: true,
+  };
+}
+
 

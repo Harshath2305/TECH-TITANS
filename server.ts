@@ -768,10 +768,133 @@ From a procurement governance perspective, achieving a ${projectedScore}/100 sco
     remediationPlan,
     source: 'deterministic_fallback',
     isFallback: true,
-    notice: 'AI service temporarily unavailable — showing evidence-based fallback insights.',
+    notice: 'AI service temporarily unavailable. Showing evidence-based registry information.',
   });
 });
 
+// Endpoint: Explain Evidence Contradiction
+app.post('/api/ai/explain-contradiction', async (req, res) => {
+  const { contradiction } = req.body;
+
+  if (!contradiction) {
+    return res.status(400).json({ error: 'Contradiction payload is required' });
+  }
+
+  const prompt = `You are the supply chain forensic analyst for SourceTrace AI.
+Explain why this evidence contradiction matters from an operational, compliance, and regulatory audit perspective.
+Provide an executive "whyItMatters" explanation (2-3 sentences) and a "recommendedAction" (1-2 sentences).
+
+RULES:
+1. Ground yourself strictly in the provided facts:
+   Supplier: ${contradiction.supplierName}
+   Field: ${contradiction.field}
+   Source A: ${contradiction.sourceA} (Value: ${contradiction.valueA})
+   Source B: ${contradiction.sourceB} (Value: ${contradiction.valueB})
+   Difference: ${contradiction.difference || 'Mismatch'}
+   Severity: ${contradiction.severity}
+2. Do NOT invent external facts, government databases, or customs investigations.
+3. Respond ONLY with a valid JSON object matching:
+{
+  "whyItMatters": string,
+  "recommendedAction": string
+}`;
+
+  if (ai && !isGeminiTemporarilyUnavailable()) {
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+        },
+      });
+
+      const text = response.text;
+      if (text) {
+        const parsed = JSON.parse(text);
+        return res.json({
+          whyItMatters: parsed.whyItMatters,
+          recommendedAction: parsed.recommendedAction,
+          source: 'gemini',
+          isFallback: false,
+        });
+      }
+    } catch (err) {
+      recordGeminiUnavailable(err, 'explain-contradiction');
+    }
+  }
+
+  // Deterministic fallback
+  res.json({
+    whyItMatters: `Discrepancy detected between ${contradiction.sourceA} (${contradiction.valueA}) and ${contradiction.sourceB} (${contradiction.valueB}). This creates audit exposure under CSRD / EU supply chain regulations and prevents automated milestone reconciliation.`,
+    recommendedAction: contradiction.recommendedAction || 'Request formal reconciliation documentation from supplier and freeze related automated approvals.',
+    source: 'deterministic_fallback',
+    isFallback: true,
+    notice: 'AI service temporarily unavailable. Showing evidence-based registry information.',
+  });
+});
+
+// Endpoint: Autonomous Supplier Investigation Interpretation
+app.post('/api/ai/investigate-supplier', async (req, res) => {
+  const { investigation } = req.body;
+
+  if (!investigation) {
+    return res.status(400).json({ error: 'Investigation payload is required' });
+  }
+
+  const prompt = `You are the chief compliance officer AI for SourceTrace AI.
+Provide an executive interpretation of the following automated 8-stage supplier investigation.
+RULES:
+1. Rely ONLY on the provided deterministic facts:
+   Supplier: ${investigation.supplierName}
+   Status: ${investigation.investigationStatus}
+   Risk: ${investigation.overallRisk}
+   Positive Signals: ${JSON.stringify(investigation.positiveSignals)}
+   Attention Required: ${JSON.stringify(investigation.attentionRequired)}
+   Contradictions Found: ${investigation.contradictionsFound}
+   Anomalies Found: ${investigation.anomaliesFound}
+2. Format response as JSON matching:
+{
+  "executiveSummary": string,
+  "actionPriorities": string[]
+}`;
+
+  if (ai && !isGeminiTemporarilyUnavailable()) {
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+        },
+      });
+
+      const text = response.text;
+      if (text) {
+        const parsed = JSON.parse(text);
+        return res.json({
+          executiveSummary: parsed.executiveSummary,
+          actionPriorities: parsed.actionPriorities,
+          source: 'gemini',
+          isFallback: false,
+        });
+      }
+    } catch (err) {
+      recordGeminiUnavailable(err, 'investigate-supplier');
+    }
+  }
+
+  // Deterministic fallback
+  res.json({
+    executiveSummary: investigation.answer,
+    actionPriorities: investigation.recommendedActions,
+    source: 'deterministic_fallback',
+    isFallback: true,
+    notice: 'AI service temporarily unavailable. Showing evidence-based registry information.',
+  });
+});
 
 // Vite Middleware for development OR static serving for production
 if (process.env.NODE_ENV === 'production') {

@@ -21,6 +21,8 @@ import {
   Calendar,
   Sliders,
   Grid,
+  Cpu,
+  Layers,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ComplianceScoreBadge } from '../components/common/ComplianceScoreBadge';
@@ -29,7 +31,7 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { VerificationProvenance } from '../components/common/VerificationProvenance';
 
 export const SupplierDetailView: React.FC = () => {
-  const { suppliers, routeParam, navigate, openPrintReport, auditLedger, addComplianceAction } = useApp();
+  const { suppliers, routeParam, navigate, openPrintReport, auditLedger, addComplianceAction, setActiveInvestigationSupplierId } = useApp();
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [isCreatingAction, setIsCreatingAction] = useState(false);
   const [newActionTitle, setNewActionTitle] = useState('');
@@ -105,6 +107,25 @@ export const SupplierDetailView: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => {
+              setActiveInvestigationSupplierId(supplier.id);
+              navigate('investigations');
+            }}
+            className="px-3.5 py-2 rounded-lg bg-teal-500/15 hover:bg-teal-500/25 border border-teal-500/30 text-xs font-bold text-teal-300 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+            title="Run autonomous 8-gate forensic investigation"
+          >
+            <Cpu className="w-3.5 h-3.5 text-teal-400" />
+            <span>Investigate Root Cause</span>
+          </button>
+          <button
+            onClick={() => navigate('digital-twin')}
+            className="px-3.5 py-2 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-xs font-semibold text-cyan-300 transition-colors flex items-center gap-1.5 cursor-pointer"
+            title="Inspect 6-layer digital twin"
+          >
+            <Layers className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Digital Twin</span>
+          </button>
           <button
             onClick={() => navigate('simulator', supplier.id)}
             className="px-3.5 py-2 rounded-lg border border-slate-200 bg-white hover:bg-teal-50 hover:border-teal-300 text-xs font-semibold text-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
@@ -620,7 +641,7 @@ export const SupplierDetailView: React.FC = () => {
                     <div className="p-3 rounded-xl bg-amber-50/90 border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                        <span>AI service temporarily unavailable — showing evidence-based fallback insights.</span>
+                        <span>AI service temporarily unavailable. Showing evidence-based registry information.</span>
                       </div>
                       <span className="text-[11px] font-mono text-amber-700">source: deterministic_fallback</span>
                     </div>

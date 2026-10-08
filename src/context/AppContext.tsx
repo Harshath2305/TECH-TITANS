@@ -1,8 +1,23 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Supplier, Document, Shipment, ComplianceAction, AuditRecord, NotificationItem, RiskAnalysis, CheckResult, SeverityLevel } from '../types';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import {
+  Supplier,
+  Document,
+  Shipment,
+  ComplianceAction,
+  AuditRecord,
+  NotificationItem,
+  RiskAnalysis,
+  CheckResult,
+  SeverityLevel,
+  EvidenceContradiction,
+  InvestigationRecord,
+} from '../types';
 import { SEEDED_SUPPLIERS, generateSeededLedger, SEEDED_NOTIFICATIONS, createAuditRecord } from '../data/seedData';
 import { calculateScope3Carbon } from '../utils/carbon';
 import { analyzeSupplierRisk, explainScoreDelta, buildDeterministicRiskAnalysis, ScoreChangeExplanation } from '../services/aiService';
+import { detectEvidenceContradictions } from '../utils/contradictionEngine';
+import { runAutonomousSupplierInvestigation } from '../utils/investigationEngine';
+import { computeRawAnomalies } from '../utils/anomalyEngine';
 
 interface DemoVerificationState {
   selectedManifest: string;
@@ -65,6 +80,8 @@ interface AppContextType {
   printSupplierId: string | null;
   openPrintReport: (supplierId: string) => void;
   closePrintReport: () => void;
+  isExecutiveBriefOpen: boolean;
+  setIsExecutiveBriefOpen: (open: boolean) => void;
   // Demo Workflow State
   demoState: DemoVerificationState;
   setDemoStep: (step: number) => void;
@@ -84,6 +101,14 @@ interface AppContextType {
   // Copilot Drawer
   isCopilotOpen: boolean;
   setIsCopilotOpen: (open: boolean) => void;
+  // Contradiction Engine
+  contradictions: EvidenceContradiction[];
+  updateContradictionStatus: (id: string, status: 'Open' | 'Investigating' | 'Resolved') => void;
+  // Autonomous Investigation Mode
+  investigations: InvestigationRecord[];
+  runAutonomousInvestigation: (supplierId: string) => Promise<InvestigationRecord>;
+  activeInvestigationSupplierId: string | null;
+  setActiveInvestigationSupplierId: (id: string | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -92,6 +117,8 @@ const STORAGE_KEYS = {
   SUPPLIERS: 'sourcetrace_suppliers_v1',
   LEDGER: 'sourcetrace_ledger_v1',
   NOTIFICATIONS: 'sourcetrace_notifications_v1',
+  INVESTIGATIONS: 'sourcetrace_investigations_v1',
+  CONTRADICTIONS_STATUSES: 'sourcetrace_contradiction_statuses_v1',
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -106,6 +133,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Copilot Drawer State
   const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
+  const [isExecutiveBriefOpen, setIsExecutiveBriefOpen] = useState<boolean>(false);
 
   // Data Store
   const [suppliers, setSuppliers] = useState<Supplier[]>(() => {
@@ -162,6 +190,72 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.warn('Storage save error:', e);
     }
   }, [notifications]);
+
+  // Contradiction Status Overrides Map
+  const [contradictionStatusMap, setContradictionStatusMap] = useState<Record<string, 'Open' | 'Investigating' | 'Resolved'>>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.CONTRADICTIONS_STATUSES);
+      if (stored) return JSON.parse(stored);
+    } catch {
+      // fallback
+    }
+    return {};
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.CONTRADICTIONS_STATUSES, JSON.stringify(contradictionStatusMap));
+    } catch (e) {
+      console.warn('Storage save error:', e);
+    }
+  }, [contradictionStatusMap]);
+
+  // Deterministically compute contradictions across current suppliers, applying status overrides
+  const contradictions: EvidenceContradiction[] = useMemo(() => {
+    const list = detectEvidenceContradictions(suppliers);
+    return list.map(c => {
+      const override = contradictionStatusMap[c.contradictionId];
+      return override ? { ...c, status: override } : c;
+    });
+  }, [suppliers, contradictionStatusMap]);
+
+  const updateContradictionStatus = (id: string, status: 'Open' | 'Investigating' | 'Resolved') => {
+    setContradictionStatusMap(prev => ({
+      ...prev,
+      [id]: status,
+    }));
+  };
+
+  // Autonomous Investigations History Store
+  const [investigations, setInvestigations] = useState<InvestigationRecord[]>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.INVESTIGATIONS);
+      if (stored) return JSON.parse(stored);
+    } catch {
+      // fallback
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.INVESTIGATIONS, JSON.stringify(investigations));
+    } catch (e) {
+      console.warn('Storage save error:', e);
+    }
+  }, [investigations]);
+
+  const [activeInvestigationSupplierId, setActiveInvestigationSupplierId] = useState<string | null>(null);
+
+  const runAutonomousInvestigation = async (supplierId: string): Promise<InvestigationRecord> => {
+    const target = suppliers.find(s => s.id === supplierId) || suppliers[0];
+    const anomalies = computeRawAnomalies(suppliers);
+    const result = runAutonomousSupplierInvestigation(target, suppliers, anomalies, auditLedger);
+
+    setInvestigations(prev => [result, ...prev.filter(i => i.investigationId !== result.investigationId)]);
+
+    return result;
+  };
 
   // Demo Workflow State
   const [demoCurrentStep, setDemoStep] = useState<number>(1);
@@ -630,10 +724,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSuppliers(SEEDED_SUPPLIERS);
     setAuditLedger(generateSeededLedger());
     setNotifications(SEEDED_NOTIFICATIONS);
+    setInvestigations([]);
+    setContradictionStatusMap({});
     resetDemoWorkflow();
     localStorage.removeItem(STORAGE_KEYS.SUPPLIERS);
     localStorage.removeItem(STORAGE_KEYS.LEDGER);
     localStorage.removeItem(STORAGE_KEYS.NOTIFICATIONS);
+    localStorage.removeItem(STORAGE_KEYS.INVESTIGATIONS);
+    localStorage.removeItem(STORAGE_KEYS.CONTRADICTIONS_STATUSES);
   };
 
   return (
@@ -656,6 +754,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         printSupplierId,
         openPrintReport,
         closePrintReport,
+        isExecutiveBriefOpen,
+        setIsExecutiveBriefOpen,
         demoState,
         setDemoStep,
         demoCurrentStep,
@@ -672,6 +772,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsSearchOpen,
         isCopilotOpen,
         setIsCopilotOpen,
+        contradictions,
+        updateContradictionStatus,
+        investigations,
+        runAutonomousInvestigation,
+        activeInvestigationSupplierId,
+        setActiveInvestigationSupplierId,
       }}
     >
       {children}

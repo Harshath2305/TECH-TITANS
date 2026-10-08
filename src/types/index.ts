@@ -268,3 +268,63 @@ export interface HeatmapPosition {
   quadrant: 'Safe Harbor' | 'Close Monitoring' | 'Urgent Intervention' | 'Strategic Benchmark';
 }
 
+export type ContradictionCategory =
+  | 'Shipment Weight'
+  | 'Certification Validity'
+  | 'Route & Distance'
+  | 'Documentation Status'
+  | 'Carbon Calculation'
+  | 'Compliance Record';
+
+export interface EvidenceContradiction {
+  contradictionId: string;
+  supplierId: string;
+  supplierName: string;
+  shipmentId?: string;
+  category: ContradictionCategory;
+  severity: SeverityLevel;
+  confidence: number; // e.g. 94 (percentage)
+  field: string;
+  sourceA: string;
+  sourceB: string;
+  valueA: string | number;
+  valueB: string | number;
+  difference?: string | number;
+  detectedAt: string;
+  explanation?: string;
+  recommendedAction?: string;
+  status: 'Open' | 'Investigating' | 'Resolved';
+}
+
+export interface InvestigationCheckItem {
+  stageId: number;
+  stageName: string;
+  label: string;
+  passed: boolean;
+  warning?: boolean;
+  detail: string;
+  metric?: string;
+}
+
+export interface InvestigationRecord {
+  investigationId: string;
+  supplierId: string;
+  supplierName: string;
+  timestamp: string;
+  overallRisk: RiskLevel;
+  investigationStatus: 'FULL APPROVAL' | 'CONDITIONAL APPROVAL' | 'HIGH RISK ESCALATION';
+  positiveSignals: string[];
+  attentionRequired: string[];
+  contradictionsFound: number;
+  anomaliesFound: number;
+  checksPerformed: InvestigationCheckItem[];
+  answer: string;
+  evidence: string[];
+  source: string;
+  recommendedActions: string[];
+  aiUsed: boolean;
+  isFallback?: boolean;
+  provenance: string;
+}
+
+

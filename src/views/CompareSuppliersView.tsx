@@ -148,7 +148,7 @@ export const CompareSuppliersView: React.FC = () => {
           <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-              <span>AI service temporarily unavailable — showing evidence-based fallback insights.</span>
+              <span>AI service temporarily unavailable. Showing evidence-based registry information.</span>
             </div>
             <span className="text-[11px] font-mono text-amber-700">source: deterministic_fallback</span>
           </div>

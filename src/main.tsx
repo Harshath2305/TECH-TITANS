@@ -1,5 +1,6 @@
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import './index.css';
 
 // Safely suppress benign Vite preview HMR WebSocket errors
@@ -21,4 +22,8 @@ if (typeof window !== 'undefined') {
   }, true);
 }
 
-createRoot(document.getElementById('root')!).render(<App />);
+createRoot(document.getElementById('root')!).render(
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
+);

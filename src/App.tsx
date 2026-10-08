@@ -20,10 +20,14 @@ import { PrintableReportView } from './views/PrintableReportView';
 import { AnomalyDetectionView } from './views/AnomalyDetectionView';
 import { WhatIfSimulatorView } from './views/WhatIfSimulatorView';
 import { SupplierRiskHeatmapView } from './views/SupplierRiskHeatmapView';
+import { EvidenceContradictionsView } from './views/EvidenceContradictionsView';
+import { DigitalTwinView } from './views/DigitalTwinView';
+import { AutonomousInvestigationView } from './views/AutonomousInvestigationView';
 import { CopilotDrawer } from './components/copilot/CopilotDrawer';
+import { ExecutiveRiskBriefModal } from './components/common/ExecutiveRiskBriefModal';
 
 const MainContent: React.FC = () => {
-  const { activeRoute, navigate, isCopilotOpen, setIsCopilotOpen } = useApp();
+  const { activeRoute, navigate, isCopilotOpen, setIsCopilotOpen, isExecutiveBriefOpen, setIsExecutiveBriefOpen } = useApp();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Sync hash routing with app navigation
@@ -82,6 +86,12 @@ const MainContent: React.FC = () => {
         return <WhatIfSimulatorView />;
       case 'heatmap':
         return <SupplierRiskHeatmapView />;
+      case 'contradictions':
+        return <EvidenceContradictionsView />;
+      case 'digital-twin':
+        return <DigitalTwinView />;
+      case 'investigations':
+        return <AutonomousInvestigationView />;
       case 'print-report':
         return <PrintableReportView />;
       default:
@@ -92,7 +102,12 @@ const MainContent: React.FC = () => {
   const isPrintMode = activeRoute === 'print-report';
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans selection:bg-teal-500 selection:text-white">
+    <div className="min-h-screen dark-enterprise-bg text-slate-100 flex font-sans selection:bg-teal-500 selection:text-white relative overflow-x-hidden">
+      {/* Background ambient light orbs for depth */}
+      <div className="fixed top-[-10%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-teal-500/5 blur-[120px] pointer-events-none -z-10" />
+      <div className="fixed top-[30%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-blue-500/4 blur-[130px] pointer-events-none -z-10" />
+      <div className="fixed bottom-[-10%] left-[20%] w-[50vw] h-[50vw] rounded-full bg-indigo-500/3 blur-[140px] pointer-events-none -z-10" />
+
       {/* Sidebar (Hidden when printing) */}
       {!isPrintMode && (
         <Sidebar
@@ -121,6 +136,12 @@ const MainContent: React.FC = () => {
       <CopilotDrawer
         isOpen={isCopilotOpen}
         onClose={() => setIsCopilotOpen(false)}
+      />
+
+      {/* Global Executive Risk Brief Modal */}
+      <ExecutiveRiskBriefModal
+        isOpen={isExecutiveBriefOpen}
+        onClose={() => setIsExecutiveBriefOpen(false)}
       />
     </div>
   );
