@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, Search, Bell, Shield, Sparkles, User, HelpCircle, FileText } from 'lucide-react';
+import { Menu, Search, Bell, Shield, Sparkles, User, HelpCircle, FileText, Bot } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { NotificationDrawer } from '../common/NotificationDrawer';
 
@@ -8,7 +8,7 @@ interface TopbarProps {
 }
 
 export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileSidebar }) => {
-  const { activeRoute, setIsSearchOpen, notifications, navigate, openPrintReport, suppliers } = useApp();
+  const { activeRoute, setIsSearchOpen, notifications, navigate, openPrintReport, suppliers, setIsCopilotOpen } = useApp();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -35,7 +35,13 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileSidebar }) => {
       case 'actions':
         return 'Compliance Action Tracker & Remediations';
       case 'integrity':
-        return 'Internal Integrity Ledger (Audit Trail)';
+        return 'Integrity Verification Center (SHA-256 Ledger)';
+      case 'anomalies':
+        return 'AI Supply Chain Anomaly Detection';
+      case 'simulator':
+        return 'What-If Compliance Risk Simulator';
+      case 'heatmap':
+        return 'Supplier Risk & Compliance Heatmap';
       case 'print-report':
         return 'Printable Supplier Compliance Summary';
       default:
@@ -77,6 +83,19 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileSidebar }) => {
           <kbd className="hidden md:inline-block font-mono text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-400">
             ⌘K
           </kbd>
+        </button>
+
+        {/* Enterprise AI Copilot Trigger Button */}
+        <button
+          onClick={() => setIsCopilotOpen(true)}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold transition-all shadow-xs cursor-pointer group"
+          title="Open SourceTrace Copilot: Ask questions about your verified supply-chain data"
+        >
+          <Bot className="w-4 h-4 text-teal-600 group-hover:scale-110 transition-transform" />
+          <span className="hidden sm:inline">Copilot</span>
+          <span className="text-[10px] bg-teal-600 text-white px-1.5 py-0.2 rounded font-mono font-semibold">
+            AI
+          </span>
         </button>
 
         {/* Quick Demo Button */}

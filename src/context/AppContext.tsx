@@ -81,6 +81,9 @@ interface AppContextType {
   setSearchQuery: (q: string) => void;
   isSearchOpen: boolean;
   setIsSearchOpen: (open: boolean) => void;
+  // Copilot Drawer
+  isCopilotOpen: boolean;
+  setIsCopilotOpen: (open: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -100,6 +103,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Search
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+
+  // Copilot Drawer State
+  const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
 
   // Data Store
   const [suppliers, setSuppliers] = useState<Supplier[]>(() => {
@@ -664,6 +670,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setSearchQuery,
         isSearchOpen,
         setIsSearchOpen,
+        isCopilotOpen,
+        setIsCopilotOpen,
       }}
     >
       {children}

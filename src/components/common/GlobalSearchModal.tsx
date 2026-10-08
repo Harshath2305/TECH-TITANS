@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, Building2, FileText, Truck, ShieldCheck, CheckSquare, ArrowRight } from 'lucide-react';
+import { Search, X, Building2, FileText, Truck, ShieldCheck, CheckSquare, ArrowRight, Bot, AlertTriangle, Sliders, Grid, Database } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { RiskBadge } from './RiskBadge';
 import { ComplianceScoreBadge } from './ComplianceScoreBadge';
 
 export const GlobalSearchModal: React.FC = () => {
-  const { suppliers, isSearchOpen, setIsSearchOpen, navigate } = useApp();
+  const { suppliers, isSearchOpen, setIsSearchOpen, navigate, setIsCopilotOpen } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -121,9 +121,69 @@ export const GlobalSearchModal: React.FC = () => {
         {/* Results Area */}
         <div className="overflow-y-auto p-4 space-y-6">
           {!query && (
-            <div className="text-center py-8 text-slate-500 text-xs">
-              <p className="font-medium text-slate-700 mb-1">Global Intelligence Search</p>
-              <p>Type supplier names (e.g. Apex), shipment IDs (SHIP-APX-2026-0155), or ISO standards.</p>
+            <div className="space-y-4">
+              <div className="text-center py-3 text-slate-500 text-xs">
+                <p className="font-semibold text-slate-800 mb-0.5">Global Intelligence Search</p>
+                <p className="text-slate-400">Search suppliers (e.g. Apex), consignments, certificates, or jump to intelligent tools:</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <button
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    setIsCopilotOpen(true);
+                  }}
+                  className="p-2.5 rounded-xl border border-slate-200 hover:border-teal-400 bg-slate-50 hover:bg-teal-50/50 text-left transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  <Bot className="w-4 h-4 text-teal-600 shrink-0" />
+                  <div>
+                    <span className="font-bold text-slate-900 block">Supply Chain Copilot</span>
+                    <span className="text-[10px] text-slate-400">Ask questions with AI</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    navigate('anomalies');
+                  }}
+                  className="p-2.5 rounded-xl border border-slate-200 hover:border-amber-400 bg-slate-50 hover:bg-amber-50/50 text-left transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <div>
+                    <span className="font-bold text-slate-900 block">Anomaly Detection</span>
+                    <span className="text-[10px] text-slate-400">Live surveillance engine</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    navigate('simulator');
+                  }}
+                  className="p-2.5 rounded-xl border border-slate-200 hover:border-teal-400 bg-slate-50 hover:bg-teal-50/50 text-left transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  <Sliders className="w-4 h-4 text-teal-600 shrink-0" />
+                  <div>
+                    <span className="font-bold text-slate-900 block">What-If Simulator</span>
+                    <span className="text-[10px] text-slate-400">Interactive scenario model</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    navigate('heatmap');
+                  }}
+                  className="p-2.5 rounded-xl border border-slate-200 hover:border-purple-400 bg-slate-50 hover:bg-purple-50/50 text-left transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  <Grid className="w-4 h-4 text-purple-600 shrink-0" />
+                  <div>
+                    <span className="font-bold text-slate-900 block">Risk Heatmap</span>
+                    <span className="text-[10px] text-slate-400">2D quadrant matrix</span>
+                  </div>
+                </button>
+              </div>
             </div>
           )}
 

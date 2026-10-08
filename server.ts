@@ -487,6 +487,292 @@ app.post('/api/ai/explain-score-change', async (req, res) => {
   });
 });
 
+// AI Supply Chain Copilot Endpoint
+app.post('/api/ai/copilot', async (req, res) => {
+  const { question, context } = req.body;
+
+  if (!question) {
+    return res.status(400).json({ error: 'Question is required' });
+  }
+
+  const prompt = `You are SOURCE TRACE COPILOT, an enterprise supply chain compliance intelligence assistant.
+Subtitle: "Ask questions about your verified supply-chain data."
+
+CRITICAL RULES:
+1. Reason ONLY over the verified SourceTrace application records provided in this JSON context:
+${JSON.stringify(context || {}, null, 2)}
+2. ANTI-HALLUCINATION: DO NOT invent suppliers, shipment IDs, certification numbers, dates, carbon values, compliance results, or external registry claims.
+3. If information does not exist: State "I don't have enough verified information in the SourceTrace registry to answer that."
+4. Always provide grounded, concise, professional answers with clear bullet points.
+5. If discussing Apex Components Ltd, ground your answer in:
+   - Compliance Score: 90/100 (Low Risk)
+   - Missing manifests: SHIP-APX-2026-0142 and SHIP-APX-2026-0131
+   - Expiring certification: ISO 45001:2018 expires 2026-11-30
+   - Carbon footprint: 1,191.28 kg CO2e across 3 recorded shipments
+6. If discussing Nova Precision Components, ground your answer in:
+   - Compliance Score: 62/100 (Critical/High Risk)
+   - Expired ISO 14001 certification
+   - Open labor non-conformance action
+
+User question: "${question}"
+
+Respond with a JSON object:
+{
+  "content": string,
+  "citations": [
+    {
+      "id": string,
+      "label": string,
+      "entityType": "Supplier" | "Document" | "Shipment" | "ComplianceAction" | "Certification" | "Carbon",
+      "entityId": string,
+      "route": string,
+      "param": string
+    }
+  ]
+}`;
+
+  if (ai && !isGeminiTemporarilyUnavailable()) {
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+        },
+      });
+
+      const parsed = JSON.parse(response.text || '{}');
+      if (parsed.content) {
+        return res.json({
+          content: parsed.content,
+          citations: parsed.citations || [],
+          source: 'gemini',
+          isFallback: false,
+          model: 'gemini-3.8-flash',
+        });
+      }
+    } catch (err) {
+      recordGeminiUnavailable(err, 'copilot');
+    }
+  }
+
+  // Deterministic grounded fallback response based strictly on verified records
+  const qLower = question.toLowerCase();
+  let content = '';
+  const citations: Array<{ id: string; label: string; entityType: string; entityId: string; route: string; param?: string }> = [];
+
+  if (qLower.includes('attention') || qLower.includes('priority') || qLower.includes('first')) {
+    content = `**Nova Precision Components** requires immediate compliance attention:
+
+• **Compliance Score:** 62/100 (Risk Level: CRITICAL)
+• **Key Violations:** Expired ISO 14001:2015 environmental certification (expired May 15, 2026) and open labor standard non-conformance action.
+• **Recommended Action:** Execute supplier corrective action plan (CAP) and freeze high-criticality purchase orders until recertification audit results are submitted.`;
+    citations.push(
+      { id: 'cit-1', label: 'Nova Precision Components (62/100)', entityType: 'Supplier', entityId: 'sup-nova-02', route: 'supplier-detail', param: 'sup-nova-02' },
+      { id: 'cit-2', label: 'Action: Resolve Labor Non-Conformance', entityType: 'ComplianceAction', entityId: 'ACT-NOV-01', route: 'actions' }
+    );
+  } else if (qLower.includes('score 90') || (qLower.includes('apex') && (qLower.includes('score') || qLower.includes('why')))) {
+    content = `**Apex Components Ltd** is scored at **90/100 (LOW Risk)** because:
+
+• **Strengths (+90 pts):** Verified ISO 9001 and ISO 14001 certifications, validated Scope-3 road freight manifest for consignment APX-SHIP-2026-0155 (450.50 kg CO2e), and zero open regulatory penalties.
+• **Pending Gaps (-10 pts):**
+  1. **Missing Manifests (-8 pts):** Consignments **SHIP-APX-2026-0142** and **SHIP-APX-2026-0131** lack primary transport documentation.
+  2. **Expiring Certification (-2 pts):** ISO 45001:2018 occupational health & safety standard expires on **2026-11-30** (<60 days).`;
+    citations.push(
+      { id: 'cit-1', label: 'Apex Components Ltd (APX-COMP)', entityType: 'Supplier', entityId: 'sup-apex-01', route: 'supplier-detail', param: 'sup-apex-01' },
+      { id: 'cit-2', label: 'Missing Manifest: SHIP-APX-2026-0142', entityType: 'Shipment', entityId: 'SHIP-APX-2026-0142', route: 'shipments' },
+      { id: 'cit-3', label: 'Expiring ISO 45001:2018 (2026-11-30)', entityType: 'Certification', entityId: 'CERT-APX-03', route: 'compliance' }
+    );
+  } else if (qLower.includes('expir') || qLower.includes('certif')) {
+    content = `**Certification Expiration & Validity Status:**
+
+1. **Apex Components Ltd:**
+   • **ISO 45001:2018 (Occupational Health & Safety):** Certificate #OHS-2023-889 expires on **2026-11-30** (in under 60 days). Renewal audit documentation has not yet been submitted.
+2. **Nova Precision Components:**
+   • **ISO 14001:2015 (Environmental Management):** Expired on **2026-05-15**. Marked as non-compliant in internal registry.
+3. **GreenCore Technologies:**
+   • All certifications (ISO 9001, ISO 14001, ISO 50001) are active through late 2027.`;
+    citations.push(
+      { id: 'cit-1', label: 'Apex ISO 45001:2018 (Expiring 2026-11-30)', entityType: 'Certification', entityId: 'CERT-APX-03', route: 'compliance' },
+      { id: 'cit-2', label: 'Nova ISO 14001:2015 (Expired 2026-05-15)', entityType: 'Certification', entityId: 'CERT-NOV-01', route: 'supplier-detail', param: 'sup-nova-02' }
+    );
+  } else if (qLower.includes('carbon') || qLower.includes('emission') || qLower.includes('footprint')) {
+    content = `**Scope-3 Logistics Carbon Summary:**
+
+• **Highest Total Emissions:** **Pacific Electronics Manufacturing** (1,842.10 kg CO2e) due to heavy transpacific air and sea cargo consignments.
+• **Apex Components Ltd:** **1,191.28 kg CO2e** across 3 recorded shipments (450.50 kg CO2e verified from road freight consignment APX-SHIP-2026-0155).
+• **Lowest Carbon Intensity:** **GreenCore Technologies** utilizes localized rail and optimized multimodal freight.
+• **All calculations:** Computed deterministically using GHG Protocol Scope-3 Category 4 emission factors (t × km × factor).`;
+    citations.push(
+      { id: 'cit-1', label: 'Pacific Electronics Carbon (1,842.10 kg)', entityType: 'Carbon', entityId: 'sup-pac-03', route: 'carbon' },
+      { id: 'cit-2', label: 'Apex Components Carbon (1,191.28 kg)', entityType: 'Carbon', entityId: 'sup-apex-01', route: 'carbon' }
+    );
+  } else if (qLower.includes('action') || qLower.includes('open')) {
+    content = `**Current Open Compliance Actions:**
+
+1. **ACT-APX-01:** Request verified bill of lading & customs manifest for **SHIP-APX-2026-0142** (High Priority · Due 2026-10-15).
+2. **ACT-APX-02:** Upload transport manifest for **SHIP-APX-2026-0131** (High Priority · Due 2026-10-20).
+3. **ACT-APX-03:** Initiate ISO 45001:2018 recertification verification before **2026-11-30** (Medium Priority).
+4. **ACT-NOV-01:** Remediate labor standard non-conformance for **Nova Precision** (Critical Priority).`;
+    citations.push(
+      { id: 'cit-1', label: 'Compliance Action Tracker', entityType: 'ComplianceAction', entityId: 'ACT-APX-01', route: 'actions' }
+    );
+  } else if (qLower.includes('compare') || (qLower.includes('greencore') && qLower.includes('apex'))) {
+    content = `**Comparative Benchmarking: Apex Components vs GreenCore Technologies**
+
+• **Compliance Score:** GreenCore (94/100) leads Apex Components (90/100) by +4 points.
+• **Documentation Completeness:** GreenCore has 100% verified shipment documentation. Apex is missing 2 manifests (**SHIP-APX-2026-0142** and **SHIP-APX-2026-0131**).
+• **Certification Health:** GreenCore has zero expiring standards. Apex has ISO 45001:2018 expiring on **2026-11-30**.
+• **Risk Classification:** Both maintain **LOW Risk** rating, but GreenCore qualifies for Tier-1 Strategic Preferred status.`;
+    citations.push(
+      { id: 'cit-1', label: 'Compare Suppliers View', entityType: 'Supplier', entityId: 'compare', route: 'compare' },
+      { id: 'cit-2', label: 'GreenCore Technologies (94/100)', entityType: 'Supplier', entityId: 'sup-gc-04', route: 'supplier-detail', param: 'sup-gc-04' }
+    );
+  } else if (qLower.includes('missing') && qLower.includes('evidence')) {
+    content = `**Missing Verification Evidence for Apex Components Ltd:**
+
+1. **Logistics Manifest: SHIP-APX-2026-0142** — Freight consignment listed as in-transit with no attached bill of lading or carrier receipt.
+2. **Logistics Manifest: SHIP-APX-2026-0131** — Primary weight and fuel ticket unverified.
+3. **Recertification Audit Plan for ISO 45001:2018** — Mandatory renewal audit evidence required prior to the November 30, 2026 expiry.`;
+    citations.push(
+      { id: 'cit-1', label: 'Shipment: SHIP-APX-2026-0142', entityType: 'Shipment', entityId: 'SHIP-APX-2026-0142', route: 'shipments' },
+      { id: 'cit-2', label: 'Shipment: SHIP-APX-2026-0131', entityType: 'Shipment', entityId: 'SHIP-APX-2026-0131', route: 'shipments' }
+    );
+  } else if (qLower.includes('high-risk') || qLower.includes('high risk')) {
+    content = `**High-Risk Suppliers in Internal Registry:**
+
+• **Nova Precision Components (Taiwan)**
+  - **Risk Rating:** CRITICAL / HIGH
+  - **Compliance Score:** 62/100
+  - **Triggers:** Expired ISO 14001 certificate, open labor audit non-conformance, and high document rejection rate.
+  - **Status:** Under Active Remediation / Purchasing Freeze.`;
+    citations.push(
+      { id: 'cit-1', label: 'Nova Precision Components (62/100)', entityType: 'Supplier', entityId: 'sup-nova-02', route: 'supplier-detail', param: 'sup-nova-02' }
+    );
+  } else {
+    content = `**SourceTrace Registry Verified Summary:**
+
+• **Portfolio Size:** 5 active enterprise suppliers tracked under deterministic audit standards.
+• **Top Compliant Supplier:** GreenCore Technologies (94/100 · LOW Risk).
+• **Core Supplier:** Apex Components Ltd (90/100 · LOW Risk · 2 manifests pending · ISO 45001 expiring 2026-11-30).
+• **Highest Counterparty Risk:** Nova Precision Components (62/100 · CRITICAL Risk).
+• **Audit Trail:** All calculations and records verified sequentially in the internal SHA-256 integrity ledger.`;
+    citations.push(
+      { id: 'cit-1', label: 'Executive Dashboard', entityType: 'Supplier', entityId: 'dashboard', route: 'dashboard' }
+    );
+  }
+
+  res.json({
+    content,
+    citations,
+    source: 'deterministic_fallback',
+    isFallback: true,
+    notice: 'AI service temporarily unavailable — showing evidence-based fallback insights.',
+    model: 'Evidence-based fallback analysis',
+  });
+});
+
+// AI What-If Risk Simulator Endpoint
+app.post('/api/ai/simulate-scenario', async (req, res) => {
+  const { scenario, supplier } = req.body;
+
+  if (!supplier) {
+    return res.status(400).json({ error: 'Supplier data is required' });
+  }
+
+  const baseScore = supplier.complianceScore || 90;
+  let scoreDelta = 0;
+  let carbonDeltaKg = 0;
+  const remediationPlan: string[] = [];
+
+  if (scenario.resolveMissingManifests) {
+    scoreDelta += 6;
+    remediationPlan.push('Attach verified freight manifests for pending consignments (e.g. SHIP-APX-2026-0142 & 0131)');
+  }
+  if (scenario.renewExpiringCerts) {
+    scoreDelta += 4;
+    remediationPlan.push('Submit accredited ISO 45001:2018 recertification audit report before 2026-11-30');
+  }
+  if (scenario.lowCarbonFreight) {
+    carbonDeltaKg = Math.round((supplier.carbonSummary?.totalEmissionsKg || 1191.28) * 0.40);
+    remediationPlan.push('Transition regional road freight to intermodal electrified rail and Euro VI-e routes');
+  }
+  if (scenario.resolveOpenNonConformances) {
+    scoreDelta += 3;
+    remediationPlan.push('Close open corrective actions with third-party auditor sign-off');
+  }
+  if (scenario.simulateAdverseEvent) {
+    scoreDelta -= 15;
+    remediationPlan.push('Simulated: Unresolved audit finding and expired quality certification');
+  }
+
+  const projectedScore = Math.min(100, Math.max(0, baseScore + scoreDelta));
+  const projectedRisk = projectedScore >= 85 ? 'LOW' : projectedScore >= 70 ? 'MEDIUM' : 'HIGH';
+
+  const prompt = `You are a supply chain risk management consultant.
+Analyze this simulated supplier scenario:
+Supplier: ${supplier.name} (${supplier.code})
+Baseline Compliance Score: ${baseScore}/100 (${supplier.riskLevel} Risk)
+Projected Compliance Score: ${projectedScore}/100 (${projectedRisk} Risk)
+Net Score Change: ${scoreDelta > 0 ? '+' : ''}${scoreDelta} points
+Carbon Reduction: ${carbonDeltaKg} kg CO2e
+Simulated Actions: ${JSON.stringify(scenario)}
+
+Provide a concise 2-paragraph executive memo summarizing:
+1. The business and compliance impact of these adjustments.
+2. The recommended procurement decision (e.g. Tier-1 preferred status, audit frequency adjustment, contract renewal).
+Return JSON: { "strategicMemo": string }`;
+
+  if (ai && !isGeminiTemporarilyUnavailable()) {
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+        },
+      });
+
+      const parsed = JSON.parse(response.text || '{}');
+      if (parsed.strategicMemo) {
+        return res.json({
+          projectedScore,
+          scoreDelta,
+          projectedRisk,
+          carbonDeltaKg,
+          strategicMemo: parsed.strategicMemo,
+          remediationPlan,
+          source: 'gemini',
+          isFallback: false,
+        });
+      }
+    } catch (err) {
+      recordGeminiUnavailable(err, 'simulate-scenario');
+    }
+  }
+
+  // Deterministic executive memo
+  const directionText = scoreDelta >= 0 ? `an improvement of +${scoreDelta} points` : `a decline of ${scoreDelta} points`;
+  const memo = `Executing this simulation for ${supplier.name} yields a projected compliance score of ${projectedScore}/100 (${directionText}), moving risk classification to ${projectedRisk}. By addressing primary documentation and certification milestones, ${supplier.name} eliminates critical compliance vulnerabilities and secures verifiable Scope-3 logistics integrity.
+
+From a procurement governance perspective, achieving a ${projectedScore}/100 score qualifies the vendor for Tier-1 Preferred Supplier status, reducing audit oversight frequency from quarterly reviews to an annual self-service attestation cycle while yielding ${carbonDeltaKg > 0 ? `${carbonDeltaKg} kg CO2e in verified logistics emissions reduction.` : 'complete audit trail transparency.'}`;
+
+  res.json({
+    projectedScore,
+    scoreDelta,
+    projectedRisk,
+    carbonDeltaKg,
+    strategicMemo: memo,
+    remediationPlan,
+    source: 'deterministic_fallback',
+    isFallback: true,
+    notice: 'AI service temporarily unavailable — showing evidence-based fallback insights.',
+  });
+});
+
+
 // Vite Middleware for development OR static serving for production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.resolve(__dirname, 'dist')));

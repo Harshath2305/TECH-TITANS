@@ -183,3 +183,88 @@ export interface ExecutiveInsight {
   recommendedNextStep: string;
   evidenceReference: string;
 }
+
+export interface CopilotCitation {
+  id: string;
+  label: string;
+  entityType: 'Supplier' | 'Document' | 'Shipment' | 'ComplianceAction' | 'Certification' | 'Carbon';
+  entityId: string;
+  route: string;
+  param?: string;
+}
+
+export interface CopilotMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  citations?: CopilotCitation[];
+  isFallback?: boolean;
+  source?: 'gemini' | 'deterministic_fallback';
+  model?: string;
+}
+
+export type AnomalyCategory = 'Carbon' | 'Documentation' | 'Certification' | 'Compliance' | 'Integrity';
+
+export interface SupplyChainAnomaly {
+  id: string;
+  category: AnomalyCategory;
+  severity: SeverityLevel;
+  title: string;
+  supplierId: string;
+  supplierName: string;
+  entityId: string;
+  entityType: string;
+  observedValue: string;
+  baselineThreshold: string;
+  explanation: string;
+  remediation: string;
+  detectedAt: string;
+  status: 'Open' | 'Investigating' | 'Resolved';
+}
+
+export interface SimulationScenario {
+  supplierId: string;
+  resolveMissingManifests: boolean;
+  renewExpiringCerts: boolean;
+  lowCarbonFreight: boolean;
+  resolveOpenNonConformances: boolean;
+  simulateAdverseEvent: boolean;
+}
+
+export interface SimulationResult {
+  supplierId: string;
+  supplierName: string;
+  beforeScore: number;
+  afterScore: number;
+  scoreDelta: number;
+  beforeRisk: RiskLevel;
+  afterRisk: RiskLevel;
+  beforeCarbonKg: number;
+  afterCarbonKg: number;
+  carbonSavedKg: number;
+  carbonReductionPercent: number;
+  auditFrequencyBefore: string;
+  auditFrequencyAfter: string;
+  tierStatusBefore: string;
+  tierStatusAfter: string;
+  strategicMemo: string;
+  remediationPlan: string[];
+  isFallback?: boolean;
+  source?: 'gemini' | 'deterministic_fallback';
+}
+
+export interface DimensionScores {
+  environmental: number; // 0-100
+  regulatory: number;    // 0-100
+  documentation: number; // 0-100
+  operational: number;   // 0-100
+  integrity: number;     // 0-100
+}
+
+export interface HeatmapPosition {
+  complianceX: number;  // 0-100 (horizontal: compliance & documentation integrity)
+  criticalityY: number; // 0-100 (vertical: operational criticality & carbon footprint)
+  quadrant: 'Safe Harbor' | 'Close Monitoring' | 'Urgent Intervention' | 'Strategic Benchmark';
+}
+

@@ -17,9 +17,13 @@ import { ComplianceCenterView } from './views/ComplianceCenterView';
 import { ComplianceActionTrackerView } from './views/ComplianceActionTrackerView';
 import { IntegrityDatabaseView } from './views/IntegrityDatabaseView';
 import { PrintableReportView } from './views/PrintableReportView';
+import { AnomalyDetectionView } from './views/AnomalyDetectionView';
+import { WhatIfSimulatorView } from './views/WhatIfSimulatorView';
+import { SupplierRiskHeatmapView } from './views/SupplierRiskHeatmapView';
+import { CopilotDrawer } from './components/copilot/CopilotDrawer';
 
 const MainContent: React.FC = () => {
-  const { activeRoute, navigate } = useApp();
+  const { activeRoute, navigate, isCopilotOpen, setIsCopilotOpen } = useApp();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Sync hash routing with app navigation
@@ -72,6 +76,12 @@ const MainContent: React.FC = () => {
         return <ComplianceActionTrackerView />;
       case 'integrity':
         return <IntegrityDatabaseView />;
+      case 'anomalies':
+        return <AnomalyDetectionView />;
+      case 'simulator':
+        return <WhatIfSimulatorView />;
+      case 'heatmap':
+        return <SupplierRiskHeatmapView />;
       case 'print-report':
         return <PrintableReportView />;
       default:
@@ -106,6 +116,12 @@ const MainContent: React.FC = () => {
 
       {/* Global Search Modal */}
       <GlobalSearchModal />
+
+      {/* Enterprise Supply Chain Copilot Drawer */}
+      <CopilotDrawer
+        isOpen={isCopilotOpen}
+        onClose={() => setIsCopilotOpen(false)}
+      />
     </div>
   );
 };

@@ -17,6 +17,10 @@ import {
   ChevronRight,
   ShieldCheck,
   Eye,
+  Bot,
+  Grid,
+  Sliders,
+  Database,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { MetricCard } from '../components/common/MetricCard';
@@ -27,7 +31,7 @@ import { fetchExecutiveInsights, resetClientAiCooldown } from '../services/aiSer
 import { ExecutiveInsight } from '../types';
 
 export const DashboardView: React.FC = () => {
-  const { suppliers, navigate, openPrintReport } = useApp();
+  const { suppliers, navigate, openPrintReport, setIsCopilotOpen } = useApp();
   const [insights, setInsights] = useState<ExecutiveInsight[]>([]);
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
   const [selectedInsightEvidence, setSelectedInsightEvidence] = useState<ExecutiveInsight | null>(null);
@@ -134,6 +138,93 @@ export const DashboardView: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* INTELLIGENCE PACK FEATURE SHORTCUTS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Feature 1: Copilot */}
+        <button
+          onClick={() => setIsCopilotOpen(true)}
+          className="text-left p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-teal-400 hover:shadow-md transition-all shadow-xs cursor-pointer group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="w-8 h-8 rounded-lg bg-teal-500/10 text-teal-600 flex items-center justify-center group-hover:bg-teal-500 group-hover:text-slate-950 transition-colors">
+              <Bot className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-200">
+              Grounded AI
+            </span>
+          </div>
+          <h4 className="text-xs font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
+            Supply Chain Copilot
+          </h4>
+          <p className="text-[11px] text-slate-500 mt-1 leading-snug">
+            Ask natural-language questions about verified suppliers, carbon, and missing documents.
+          </p>
+        </button>
+
+        {/* Feature 2: Anomaly Detection */}
+        <button
+          onClick={() => navigate('anomalies')}
+          className="text-left p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-amber-400 hover:shadow-md transition-all shadow-xs cursor-pointer group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-colors">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+              Surveillance
+            </span>
+          </div>
+          <h4 className="text-xs font-bold text-slate-900 group-hover:text-amber-700 transition-colors">
+            Anomaly Detection
+          </h4>
+          <p className="text-[11px] text-slate-500 mt-1 leading-snug">
+            Surveillance scanning carbon outliers, missing manifests, and certification expiry windows.
+          </p>
+        </button>
+
+        {/* Feature 3: What-If Simulator */}
+        <button
+          onClick={() => navigate('simulator')}
+          className="text-left p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-teal-400 hover:shadow-md transition-all shadow-xs cursor-pointer group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="w-8 h-8 rounded-lg bg-teal-500/10 text-teal-600 flex items-center justify-center group-hover:bg-teal-500 group-hover:text-slate-950 transition-colors">
+              <Sliders className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-200">
+              Interactive
+            </span>
+          </div>
+          <h4 className="text-xs font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
+            What-If Risk Simulator
+          </h4>
+          <p className="text-[11px] text-slate-500 mt-1 leading-snug">
+            Model prospective score gains from uploading manifests, renewing ISOs, and route shifts.
+          </p>
+        </button>
+
+        {/* Feature 5: Supplier Heatmap */}
+        <button
+          onClick={() => navigate('heatmap')}
+          className="text-left p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-teal-400 hover:shadow-md transition-all shadow-xs cursor-pointer group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors">
+              <Grid className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
+              2D Matrix
+            </span>
+          </div>
+          <h4 className="text-xs font-bold text-slate-900 group-hover:text-purple-700 transition-colors">
+            Supplier Risk Heatmap
+          </h4>
+          <p className="text-[11px] text-slate-500 mt-1 leading-snug">
+            Quadrant exposure matrix plotting compliance maturity against logistics carbon intensity.
+          </p>
+        </button>
       </div>
 
       {/* 8 Primary Executive Metric Cards */}

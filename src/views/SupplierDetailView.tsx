@@ -19,6 +19,8 @@ import {
   Phone,
   MapPin,
   Calendar,
+  Sliders,
+  Grid,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ComplianceScoreBadge } from '../components/common/ComplianceScoreBadge';
@@ -102,16 +104,32 @@ export const SupplierDetailView: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => navigate('simulator', supplier.id)}
+            className="px-3.5 py-2 rounded-lg border border-slate-200 bg-white hover:bg-teal-50 hover:border-teal-300 text-xs font-semibold text-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+            title="Model prospective changes in What-If Simulator"
+          >
+            <Sliders className="w-3.5 h-3.5 text-teal-600" />
+            <span>What-If Simulator</span>
+          </button>
+          <button
+            onClick={() => navigate('heatmap')}
+            className="px-3 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+            title="View on Risk Heatmap"
+          >
+            <Grid className="w-3.5 h-3.5 text-purple-600" />
+            <span>Heatmap</span>
+          </button>
           <button
             onClick={() => navigate('demo-verification')}
-            className="px-3.5 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors"
+            className="px-3.5 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
           >
             Verify Manifest
           </button>
           <button
             onClick={() => openPrintReport(supplier.id)}
-            className="px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs"
+            className="px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             <span>Print Compliance Summary</span>
